@@ -2,7 +2,6 @@ import numpy as np
 from scipy import signal
 from abc import ABC, abstractmethod
 
-
 class Instrument(ABC):
     """abstract class for implementing synth instruments"""
 
@@ -91,11 +90,20 @@ class Noise(Instrument):
     (and then get cut in half, to keep duration the same)
     """
 
-    def _create_phase(self, t: np.ndarray, duration: float) -> np.ndarray:
+    def _create_phase(self, duration: float) -> np.ndarray:
         return np.random.rand(int(Instrument.sample_rate*duration))
     
     def create_tone(self, duration: float, repeat: int=1, volume: float=1.0) -> np.ndarray:
-        t = self._create_t(Instrument.sample_rate, duration)
-        phase = self._create_phase(t, duration)
+        phase = self._create_phase(duration)
         tone = np.repeat(phase, repeat)[:int(Instrument.sample_rate * duration)]
         return self._normalise(tone, volume)
+
+
+class Silence(Instrument):
+    """Test instrument used for creating blank samples"""
+
+    def _create_phase(self):
+        pass
+
+    def create_tone(self, duration):
+        return np.zeros(int(Instrument.sample_rate * duration))

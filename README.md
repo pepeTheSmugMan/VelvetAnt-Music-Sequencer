@@ -7,10 +7,10 @@ VelvetAnt Music Sequencer **(VMS)** is an application made for creating musical 
     cd project_folder
 
     # Create virtual environment
-    python3 -m venv .venv
+    python3 -m venv main/.venv
 
     # Activate it
-    source .venv/bin/activate
+    source main/.venv/bin/activate
 
     # Install all dependencies
     python -m pip install -r requirements.txt
