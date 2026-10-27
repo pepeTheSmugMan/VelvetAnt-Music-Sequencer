@@ -30,6 +30,19 @@ class Instrument(ABC):
         tone[-100:] *= fade
         return tone
 
+    def create_melody(self, segment, speed=1.0) -> np.array:
+        """turns a segment into np.array melody"""
+        output = np.zeros(int(self.sample_rate * segment.duration * speed))
+        for note in segment.notes:
+
+            sound = self.create_tone(note.duration * speed, note.pitch)
+            index = int(self.sample_rate * note.start * speed)
+
+            output[index:(index+len(sound))] += sound
+        
+        return np.clip(output, -1, 1)
+
+
 
 class SimpleTone(Instrument):
     """Provides interface for synthesizing sound from a mathematical function, e.g. numpy.sin"""

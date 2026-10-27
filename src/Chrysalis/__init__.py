@@ -1,1 +1,1 @@
-from .mixer import Mixer
+from .Mixer import Mixer
