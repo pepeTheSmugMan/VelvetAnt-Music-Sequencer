@@ -1,11 +1,14 @@
 import numpy as np
 from scipy import signal
-from .Instruments import SimpleTone, Noise, Sawtooth, Silence
+from .Instruments import *
 
 #simple tones
 sine = SimpleTone(np.sin)
 tangent = SimpleTone(np.tan)
 square = SimpleTone(signal.square)
+
+#dial tones
+dialSine = DialTone(np.sin, 40, 60)
 
 #saws
 sawtoooth = Sawtooth(1.0)

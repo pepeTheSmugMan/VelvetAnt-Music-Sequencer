@@ -7,8 +7,9 @@ import numpy as np
 if __name__ == "__main__":
 
     Chirp.Presets.square.volume = 0.25
+    Chrysalis.Mixer.speed = 0.5
     print(Chirp.Presets.square.volume)
-    song = Chrysalis.Mixer.create_track(Chirp.Presets.square, Antennae.song, Chirp.pianoScale)
+    song = Chrysalis.Mixer.create_track(Chirp.Presets.sine, Antennae.song, Chirp.pianoScale)
 
     # instrument presentation
     sounddevice.play(song)
