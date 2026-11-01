@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import signal
 from .Instruments import *
+from .PhaseGenerators import *
 from matplotlib import pyplot as plt
 
 #simple tones
@@ -9,7 +10,7 @@ tangent = SimpleTone(np.tan)
 square = SimpleTone(signal.square)
 
 #dial tones
-dialSine = DialTone(np.sin, 40, 60)
+dialSine = SimpleTone(np.sin, DialPhaseGenerator(40, 60, Instrument))
 
 #saws
 sawtoooth = SimpleTone(lambda phase : signal.sawtooth(phase, 1.0))
@@ -27,9 +28,14 @@ silence = Silence()
 #ADSR
 ADSRsine = ADSRSynth(np.sin, 0.1, 0.1, 0.7, 0.5, 1.0)
 
-#! damn this is cursed as hell 😂 get rid of this goofy thing later
-ASDRdialSine = ADSRSynth(np.sin, 0.1, 0.1, 0.7, 0.5, 1.0)
-helperDial = DialTone(lambda a: a, 10, 20)
-ASDRdialSine._create_phase = helperDial._create_phase
+ADSRdialSine = ADSRSynth(
+    tone_function= np.sin,
+    attack=0.1,
+    decay=0.1,
+    sustain=0.7,
+    release=0.5,
+    peak=1.0,
+    phase_generator=DialPhaseGenerator(10, 20, Instrument)
+)
 
-ASDRbasicSine = ADSRSynth(np.sin, 0.0, 0.0, 1.0, 0.0, 1.0) # same as sine
+ADSRbasicSine = ADSRSynth(np.sin) # same as sine

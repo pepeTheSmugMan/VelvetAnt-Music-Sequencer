@@ -1,7 +1,8 @@
 import numpy as np
-from scipy import signal
 from abc import ABC, abstractmethod
 from matplotlib import pyplot as plt
+from .PhaseGenerators import PhaseGenerator, LinearPhaseGenerator
+
 
 class Instrument(ABC):
     """abstract class for implementing synth instruments"""
@@ -53,11 +54,12 @@ class Instrument(ABC):
 class SimpleTone(Instrument):
     """Provides interface for synthesizing sound from a mathematical function, e.g. numpy.sin"""
 
-    def __init__(self, _tone_function:callable):
-        self._tone_function = _tone_function
-    
-    def _create_phase(self, t: np.ndarray, frequency: float) -> np.ndarray:
-        return 2 * np.pi * frequency * t
+    def __init__(self, tone_function:callable, phase_generator: PhaseGenerator = None):
+        self._tone_function = tone_function
+        if phase_generator is None:
+            self.phase_generator = LinearPhaseGenerator()
+        else:
+            self.phase_generator = phase_generator
 
     def create_tone(self, duration: float, frequency: float, volume: float = None) -> np.ndarray:
         """
@@ -68,7 +70,7 @@ class SimpleTone(Instrument):
             volume = self.volume
 
         t = self._create_t(Instrument.sample_rate, duration)
-        phase = self._create_phase(t, frequency)
+        phase = self.phase_generator.create_phase(t, frequency)
         tone = self._tone_function(phase)
         tone = self._normalise(tone, volume)
         return self._terminal_fade(tone)
@@ -77,8 +79,17 @@ class SimpleTone(Instrument):
 class ADSRSynth(SimpleTone):
     """Interface for synths using attack, decay, sustain, release"""
 
-    def __init__(self, _tone_function:callable, attack: float, decay: float, sustain: float, release: float, peak: float):
-        self._tone_function = _tone_function
+    def __init__(
+        self, 
+        tone_function:callable, 
+        attack: float = 0.0, 
+        decay: float = 0.0, 
+        sustain: float = 1.0, 
+        release: float = 0.0, 
+        peak: float =1.0, 
+        phase_generator: PhaseGenerator = None
+    ):
+        super().__init__(tone_function, phase_generator)
         self.attack = attack
         self.peak = peak
         self.decay = decay
@@ -105,7 +116,7 @@ class ADSRSynth(SimpleTone):
             volume = self.volume
 
         t = self._create_t(Instrument.sample_rate, duration + self.release)
-        phase = self._create_phase(t, frequency)
+        phase = self.phase_generator.create_phase(t, frequency)
         tone = self._tone_function(phase)
         tone = self._normalise(tone, volume)
 
@@ -119,26 +130,6 @@ class ADSRSynth(SimpleTone):
             tone[-len(release):] *= release
 
         return self._terminal_fade(tone)
-
-
-class DialTone(SimpleTone):
-    """Provides interface for synthesizing sound from a mathematical function, e.g. numpy.sin,
-    switching between frequency based on given on - drop, in interval"""
-
-    def __init__(self, _tone_function:callable, interval: int, frequencyDrop: int):
-        self._tone_function = _tone_function
-        self.interval = interval
-        self.frequencyDrop = frequencyDrop
-
-    def _create_phase(self, t: np.ndarray, frequency: float) -> np.ndarray:
-
-        interval = Instrument.sample_rate/self.interval
-        speed = np.where(
-            (np.arange(len(t)) // interval ) % 2 == 0,
-            frequency, 
-            frequency-self.frequencyDrop
-        )
-        return 2 * np.pi * np.cumsum(np.diff(t, prepend=0) * speed)
 
 
 class Noise(Instrument):
